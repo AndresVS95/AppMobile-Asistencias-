@@ -1,70 +1,20 @@
 import { useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput,
-  Modal, ActivityIndicator, StyleSheet, RefreshControl, Alert,
+  ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParams } from '../navigation/RootNavigator';
 import { useEstudiantes } from '../hooks/useEstudiantes';
 import type { Estudiante, EstadoAsistencia } from '../types';
+import { FilaEstudiante } from '../components/FilaEstudainte';
+import { NuevoEstudianteModal } from '../components/NuevoEstudianteModal';
+import { styles } from './EstudiantesScreen.styles';
 
 type Props = NativeStackScreenProps<RootStackParams, 'Estudiantes'>;
 
-// ─── Colores por estado ───────────────────────────────────────────────────────
-const ESTADO_COLOR: Record<EstadoAsistencia, string> = {
-  PRESENTE:  '#1D9E75',
-  EXCUSADO:  '#F59E0B',
-  AUSENTE:   '#EF4444',
-};
-
-const ESTADO_LABEL: Record<EstadoAsistencia, string> = {
-  PRESENTE:  'Presente',
-  EXCUSADO:  'Excusado',
-  AUSENTE:   'Ausente',
-};
-
-// ─── Fila de estudiante ───────────────────────────────────────────────────────
-function FilaEstudiante({
-  estudiante,
-  estadoMarcado,
-  onMarcar,
-}: {
-  estudiante: Estudiante;
-  estadoMarcado?: EstadoAsistencia;
-  onMarcar: (estado: EstadoAsistencia) => void;
-}) {
-  return (
-    <View style={styles.fila}>
-      <View style={styles.filaInfo}>
-        <Text style={styles.filaNombre}>{estudiante.nombreEstudiante}</Text>
-        <Text style={styles.filaCodigo}>{estudiante.codigo}</Text>
-      </View>
-
-      {estadoMarcado ? (
-        <View style={[styles.estadoBadge, { backgroundColor: ESTADO_COLOR[estadoMarcado] }]}>
-          <Text style={styles.estadoTexto}>{ESTADO_LABEL[estadoMarcado]}</Text>
-        </View>
-      ) : (
-        <View style={styles.botonesAsistencia}>
-          {(['PRESENTE', 'EXCUSADO', 'AUSENTE'] as EstadoAsistencia[]).map(e => (
-            <TouchableOpacity
-              key={e}
-              style={[styles.btnEstado, { backgroundColor: ESTADO_COLOR[e] }]}
-              onPress={() => onMarcar(e)}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.btnEstadoTexto}>{ESTADO_LABEL[e]}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-
-// ─── Pantalla principal ───────────────────────────────────────────────────────
 export function EstudiantesScreen({ route }: Props) {
-  const { id_clase, nombre_clase } = route.params;
+  const { id_clase } = route.params;
 
   const {
     estudiantes, loading, saving, error,
@@ -89,6 +39,12 @@ export function EstudiantesScreen({ route }: Props) {
     } else {
       Alert.alert('Error', result.error ?? 'No se pudo agregar el estudiante.');
     }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setCodigo('');
+    setNombre('');
   };
 
   const handleMarcar = async (est: Estudiante, estado: EstadoAsistencia) => {
@@ -120,7 +76,6 @@ export function EstudiantesScreen({ route }: Props) {
   return (
     <View style={styles.container}>
 
-      {/* Fecha */}
       <View style={styles.fechaBar}>
         <Text style={styles.fechaLabel}>Fecha:</Text>
         <TextInput
@@ -132,7 +87,6 @@ export function EstudiantesScreen({ route }: Props) {
         />
       </View>
 
-      {/* Lista */}
       <FlatList
         data={estudiantes}
         keyExtractor={item => item.idEstudiante.toString()}
@@ -161,7 +115,6 @@ export function EstudiantesScreen({ route }: Props) {
         )}
       />
 
-      {/* FAB */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setModalVisible(true)}
@@ -170,173 +123,17 @@ export function EstudiantesScreen({ route }: Props) {
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
 
-      {/* Modal agregar estudiante */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-
-            <Text style={styles.modalTitle}>Nuevo estudiante</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Código"
-              placeholderTextColor="#9CA3AF"
-              value={codigo}
-              onChangeText={setCodigo}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre completo"
-              placeholderTextColor="#9CA3AF"
-              value={nombre}
-              onChangeText={setNombre}
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => { setModalVisible(false); setCodigo(''); setNombre(''); }}
-                disabled={saving}
-              >
-                <Text style={styles.cancelText}>Cancelar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.saveBtn, saving && styles.btnDisabled]}
-                onPress={handleAgregar}
-                disabled={saving}
-              >
-                {saving
-                  ? <ActivityIndicator color="#fff" />
-                  : <Text style={styles.saveText}>Agregar</Text>
-                }
-              </TouchableOpacity>
-            </View>
-
-          </View>
-        </View>
-      </Modal>
+      <NuevoEstudianteModal
+        visible={modalVisible}
+        codigo={codigo}
+        nombre={nombre}
+        saving={saving}
+        onChangeCodigo={setCodigo}
+        onChangeNombre={setNombre}
+        onAgregar={handleAgregar}
+        onClose={handleCloseModal}
+      />
 
     </View>
   );
 }
-
-// ─── Estilos ──────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  centered:  { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-
-  fechaBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    gap: 10,
-  },
-  fechaLabel: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
-  fechaInput: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 14,
-    color: '#111827',
-  },
-
-  subtitulo: { fontSize: 13, color: '#9CA3AF', marginBottom: 8, paddingHorizontal: 4 },
-
-  list: { padding: 16, gap: 10, paddingBottom: 90 },
-
-  fila: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 14,
-    gap: 10,
-  },
-  filaInfo: { gap: 2 },
-  filaNombre: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  filaCodigo: { fontSize: 12, color: '#9CA3AF' },
-
-  botonesAsistencia: { flexDirection: 'row', gap: 8 },
-  btnEstado: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  btnEstadoTexto: { color: '#fff', fontSize: 12, fontWeight: '600' },
-
-  estadoBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  estadoTexto: { color: '#fff', fontSize: 13, fontWeight: '600' },
-
-  fab: {
-    position: 'absolute',
-    right: 24,
-    bottom: 28,
-    backgroundColor: '#1D9E75',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-  },
-  fabText: { fontSize: 28, color: '#fff', lineHeight: 32 },
-
-  errorText: { fontSize: 15, color: '#B91C1C', textAlign: 'center', marginBottom: 12 },
-  retryBtn:  { backgroundColor: '#1D9E75', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
-  retryText: { color: '#fff', fontWeight: '600' },
-  emptyText: { fontSize: 16, color: '#6B7280', fontWeight: '500' },
-  emptyHint: { fontSize: 13, color: '#9CA3AF', marginTop: 4 },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'flex-end',
-  },
-  modalBox: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    gap: 10,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 4 },
-
-  input: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: '#111827',
-  },
-
-  modalActions: { flexDirection: 'row', gap: 10, marginTop: 6 },
-  cancelBtn: {
-    flex: 1, borderWidth: 1, borderColor: '#D1D5DB',
-    borderRadius: 10, paddingVertical: 12, alignItems: 'center',
-  },
-  cancelText: { fontSize: 15, color: '#6B7280', fontWeight: '500' },
-  saveBtn: {
-    flex: 1, backgroundColor: '#1D9E75',
-    borderRadius: 10, paddingVertical: 12, alignItems: 'center',
-  },
-  saveText:    { fontSize: 15, color: '#fff', fontWeight: '600' },
-  btnDisabled: { opacity: 0.6 },
-});

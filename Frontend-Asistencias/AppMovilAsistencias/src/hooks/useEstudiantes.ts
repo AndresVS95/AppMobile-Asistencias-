@@ -47,35 +47,35 @@ export function useEstudiantes(idClase: number) {
       await matricularEstudiante(idClase, nuevo.idEstudiante);
       await cargarEstudiantes();
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    } finally {
-      setSaving(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo agregar el estudiante.';
+      return { success: false, error: message };
     }
   };
 
   const marcarAsistencia = async (
-    estudiante: Estudiante,
-    estado: EstadoAsistencia
-  ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      await guardarAsistencias([
-        {
-          fecha,
-          estado,
-          estudiante: { idEstudiante: estudiante.idEstudiante },
-          clase:      { idClase },
-        },
-      ]);
-      setAsistenciasMarcadas(prev => ({
-        ...prev,
-        [estudiante.idEstudiante]: estado,
-      }));
-      return { success: true };
-    } catch {
-      return { success: false, error: 'Error al guardar la asistencia.' };
-    }
-  };
+  estudiante: Estudiante,
+  estado: EstadoAsistencia
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    await guardarAsistencias([
+      {
+        fecha,
+        estado,
+        estudiante: { idEstudiante: estudiante.idEstudiante },
+        clase:      { idClase },
+      },
+    ]);
+    // Solo se actualiza el estado local una vez confirmado el servidor
+    setAsistenciasMarcadas(prev => ({
+      ...prev,
+      [estudiante.idEstudiante]: estado,
+    }));
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Error al guardar la asistencia.' };
+  }
+};
 
   return {
     estudiantes,
