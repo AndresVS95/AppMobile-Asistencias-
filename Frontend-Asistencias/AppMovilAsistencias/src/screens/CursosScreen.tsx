@@ -7,6 +7,7 @@ import type { RootStackParams } from '../navigation/RootNavigator';
 import { useAuth } from '../context/AutoContext';
 import { useClases } from '../hooks/useCursos';
 import { ClaseCard } from '../components/ClaseCard';
+import { NuevoCursoModal } from '../components/NuevoCursoModal';
 
 import { styles } from './CursosScreen.styles';
 
@@ -90,6 +91,16 @@ export function CursosScreen({ navigation }: Props) {
       <TouchableOpacity style={styles.fab} onPress={openModal} activeOpacity={0.85}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
+
+      <NuevoCursoModal
+        visible={modal.visible}
+        nombre={modal.nombre}
+        errors={modal.errors}
+        saving={saving}
+        onChange={handleModalChange}
+        onSave={handleCreate}
+        onClose={closeModal}
+      />
 
       
 
