@@ -1,0 +1,21 @@
+# ETAPA 1: Construcción (Docker instala Maven y compila tu código)
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
+WORKDIR /app
+
+# Copiamos las instrucciones de dependencias
+COPY pom.xml .
+# Copiamos tu código fuente (donde está AsistenciaApplication.java)
+COPY src src
+
+# Le ordenamos a Docker que fabrique el archivo .jar internamente
+RUN mvn clean package -DskipTests
+
+# ETAPA 2: Ejecución (Docker toma el .jar recién horneado y lo enciende)
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+
+# Copiamos el .jar desde la "Etapa 1" (build) hacia esta etapa final
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
