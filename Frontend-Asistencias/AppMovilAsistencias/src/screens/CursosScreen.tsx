@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParams } from '../navigation/RootNavigator';
 import { useAuth } from '../context/AutoContext';
 import { useClases } from '../hooks/useCursos';
+import { ClaseCard } from '../components/ClaseCard';
 
 import { styles } from './CursosScreen.styles';
 
@@ -58,6 +59,37 @@ export function CursosScreen({ navigation }: Props) {
           <Text style={styles.logoutText}>Salir</Text>
         </TouchableOpacity>
       </View>
+
+      <FlatList
+        data={clases}
+        keyExtractor={item => item.idClase.toString()}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refetch} colors={['#1D9E75']} />
+        }
+        ListEmptyComponent={
+          <View style={styles.centered}>
+            <Text style={styles.emptyText}>No tienes clases aún.</Text>
+            <Text style={styles.emptyHint}>Toca + para crear una.</Text>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <ClaseCard
+            clase={item}
+            onPress={() =>
+              navigation.navigate('Estudiantes', {
+                id_clase: item.idClase,
+                nombre_clase: item.nombre,
+              })
+            }
+          />
+        )}
+      />
+
+      <TouchableOpacity style={styles.fab} onPress={openModal} activeOpacity={0.85}>
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
 
       
 
