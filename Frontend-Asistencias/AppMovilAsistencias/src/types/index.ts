@@ -16,6 +16,11 @@ export type Clase = {
   };
 };
 
+export type Estudiante = {
+  id_estudiante: number;
+  codigo: string;
+  nombreEstudiante: string;
+};
 
 export type LoginResponse = {
   token: string;
