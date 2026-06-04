@@ -5,8 +5,9 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '../context/AutoContext';
 
 // Screens
-import { LoginScreen }       from '../screens/loginScreen';
-import { CursosScreen }      from '../screens/CursosScreen';
+import { LoginScreen }        from '../screens/loginScreen';
+import { CursosScreen }       from '../screens/CursosScreen';
+import { EstudiantesScreen }  from '../screens/EstudiantesScreen';
 
 
 export type RootStackParams = {
@@ -41,7 +42,11 @@ function AppNavigator() {
         component={CursosScreen}
         options={{ title: 'Mis Cursos' }}
       />
-      
+      <Stack.Screen
+        name="Estudiantes"
+        component={EstudiantesScreen}
+        options={({ route }) => ({ title: route.params.nombre_clase })}
+      />
     </Stack.Navigator>
   );
 }

@@ -21,3 +21,18 @@ export type LoginResponse = {
   token: string;
   profesor: Profesor;
 };
+
+export type Estudiante = {
+  idEstudiante: number;
+  codigo: string;
+  nombreEstudiante: string;
+};
+
+export type EstadoAsistencia = 'PRESENTE' | 'AUSENTE' | 'EXCUSADO';
+
+export type Asistencia = {
+  fecha: string;
+  estado: EstadoAsistencia;
+  estudiante: { idEstudiante: number };
+  clase: { idClase: number };
+};
