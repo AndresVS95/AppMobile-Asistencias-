@@ -118,12 +118,44 @@ export function EstudiantesScreen({ route }: Props) {
   const totalPendientes = totalEstudiantes - totalMarcados;
 
   const handleAgregar = async () => {
-    if (!codigo.trim() || !nombre.trim()) {
+    const codigoLimpio = codigo.trim();
+    const nombreLimpio = nombre.trim();
+
+    if (!codigoLimpio || !nombreLimpio) {
       Alert.alert("Campos requeridos", "Ingresa el código y el nombre.");
       return;
     }
 
-    const result = await agregarEstudiante(codigo.trim(), nombre.trim());
+    if (codigoLimpio.length < 3) {
+      Alert.alert(
+        "Código inválido",
+        "El código debe tener al menos 3 caracteres.",
+      );
+      return;
+    }
+
+    if (nombreLimpio.length < 3) {
+      Alert.alert(
+        "Nombre inválido",
+        "El nombre debe tener al menos 3 caracteres.",
+      );
+      return;
+    }
+
+    const existeCodigo = estudiantes.some(
+      (estudiante) =>
+        estudiante.codigo?.trim().toLowerCase() === codigoLimpio.toLowerCase(),
+    );
+
+    if (existeCodigo) {
+      Alert.alert(
+        "Estudiante repetido",
+        "Ya existe un estudiante con ese código en esta clase.",
+      );
+      return;
+    }
+
+    const result = await agregarEstudiante(codigoLimpio, nombreLimpio);
 
     if (result.success) {
       setCodigo("");
