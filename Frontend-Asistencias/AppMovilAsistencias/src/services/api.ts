@@ -23,7 +23,8 @@ api.interceptors.response.use(
   async error => {
     if (error.response?.status === 401) {
       // Token expirado: limpia la sesión
-      await AsyncStorage.multiRemove(['token', 'user']);
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
     }
     return Promise.reject(error);
   }
