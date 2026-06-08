@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ruta de ip de sus celulares compañeros.
-const BASE_URL = 'http://192.168.1.22:8080/api';
+const BASE_URL = 'http://10.144.115.13:8080/api';
 
 const api = axios.create({
   baseURL: BASE_URL,

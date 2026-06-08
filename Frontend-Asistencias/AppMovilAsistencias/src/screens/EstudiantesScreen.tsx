@@ -81,6 +81,10 @@ export function EstudiantesScreen({ route }: Props) {
       Alert.alert('Campos requeridos', 'Ingresa el código y el nombre.');
       return;
     }
+    if (!/^\d+$/.test(codigo.trim())) {
+      Alert.alert('Código inválido', 'El código solo puede contener números.');
+      return;
+    }
     const result = await agregarEstudiante(codigo.trim(), nombre.trim());
     if (result.success) {
       setCodigo('');
@@ -179,10 +183,11 @@ export function EstudiantesScreen({ route }: Props) {
 
             <TextInput
               style={styles.input}
-              placeholder="Código"
+              placeholder="Código (solo números)"
               placeholderTextColor="#9CA3AF"
               value={codigo}
               onChangeText={setCodigo}
+              keyboardType="numeric"
             />
             <TextInput
               style={styles.input}
